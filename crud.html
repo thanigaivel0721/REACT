@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRUD App with Web Storage</title>
+    <style>
+        body { font-family: Arial, sans-serif; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
+        th { background-color: #f2f2f2; }
+        .edit-input { display: none; }
+        button { margin: 5px; }
+    </style>
+</head>
+<body>
+    <h1>Task Manager</h1>
+    <input type="text" id="taskInput" placeholder="Enter new task" />
+    <button onclick="addTask()">Add Task</button>
+    
+    <h3>Your Tasks:</h3>
+    <ul id="taskList"></ul>
+
+    <script>
+        // Initialize task list from localStorage
+window.onload = () => {
+    displayTasks();
+};
+
+// Add new task
+function addTask() {
+    const taskInput = document.getElementById('taskInput');
+    const task = taskInput.value;
+
+    if (task) {
+        const tasks = getTasksFromStorage();
+        tasks.push(task);
+        localStorage.setItem('tasks', JSON.stringify(tasks));
+
+        taskInput.value = '';
+        displayTasks();
+    }
+}
+
+// Get tasks from localStorage
+function getTasksFromStorage() {
+    const tasks = localStorage.getItem('tasks');
+    return tasks ? JSON.parse(tasks) : [];
+}
+
+// Display tasks
+function displayTasks() {
+    const tasks = getTasksFromStorage();
+    const taskList = document.getElementById('taskList');
+    taskList.innerHTML = '';
+
+    tasks.forEach((task, index) => {
+        const li = document.createElement('li');
+        li.className = 'task-item';
+
+        // Task display and edit input
+        li.innerHTML = `
+            <span id="task-text-${index}">${task}</span>
+            <input id="edit-input-${index}" class="edit-input" type="text" value="${task}" />
+            <button class="edit" onclick="enableEdit(${index})">Edit</button>
+            <button class="save" onclick="saveTask(${index})" style="display:none;">Save</button>
+            <button class="delete" onclick="deleteTask(${index})">Delete</button>`;
+        
+        taskList.appendChild(li);
+    });
+}
+
+// Enable edit mode
+function enableEdit(index) {
+    const taskText = document.getElementById(`task-text-${index}`);
+    const editInput = document.getElementById(`edit-input-${index}`);
+    const editButton = document.querySelector(`#taskList li:nth-child(${index + 1}) .edit`);
+    const saveButton = document.querySelector(`#taskList li:nth-child(${index + 1}) .save`);
+
+    taskText.style.display = 'none';
+    editInput.style.display = 'inline';
+    editButton.style.display = 'none';
+    saveButton.style.display = 'inline';
+}
+
+// Save edited task
+function saveTask(index) {
+    const editInput = document.getElementById(`edit-input-${index}`);
+    const tasks = getTasksFromStorage();
+    const updatedTask = editInput.value;
+
+    if (updatedTask) {
+        tasks[index] = updatedTask;
+        localStorage.setItem('tasks', JSON.stringify(tasks));
+        displayTasks();
+    }
+}
+
+// Delete task
+function deleteTask(index) {
+    const tasks = getTasksFromStorage();
+    tasks.splice(index, 1);
+    localStorage.setItem('tasks', JSON.stringify(tasks));
+    displayTasks();
+}
+
+    </script>
+</body>
+</html>
